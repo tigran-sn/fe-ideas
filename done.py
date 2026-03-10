@@ -40,3 +40,12 @@ def remove(user_id: int, idea_id: int) -> bool:
     data[key].remove(idea_id)
     _save(data)
     return True
+
+
+def delete_user(user_id: int) -> None:
+    """Remove all done data for this user (for privacy / delete my data)."""
+    data = _load()
+    key = str(user_id)
+    if key in data:
+        del data[key]
+        _save(data)

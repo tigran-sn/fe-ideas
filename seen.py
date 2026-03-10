@@ -41,3 +41,12 @@ def clear_seen(user_id: int) -> None:
     if key in data:
         data[key] = []
         _save(data)
+
+
+def delete_user(user_id: int) -> None:
+    """Remove all data for this user (for privacy / delete my data)."""
+    data = _load_all()
+    key = str(user_id)
+    if key in data:
+        del data[key]
+        _save(data)

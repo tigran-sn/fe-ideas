@@ -4,10 +4,12 @@ from uuid import uuid4
 from telegram import BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, InlineQueryHandler, MessageHandler, filters
 
+import activity as activity_module
 import config
 import done as done_module
 import feedback as feedback_module
 import favorites
+import idea_reminders as idea_reminders_module
 import reminders
 import seen
 import suggestions as suggestions_module
@@ -115,6 +117,11 @@ def _filter_keyboard(
         rows.append([
             InlineKeyboardButton("👍 Helpful", callback_data=f"fb_{idea_id}_1"),
             InlineKeyboardButton("👎 Not helpful", callback_data=f"fb_{idea_id}_0"),
+        ])
+        rows.append([
+            InlineKeyboardButton("Remind in 1 day", callback_data=f"remind_1_{idea_id}"),
+            InlineKeyboardButton("Remind in 3 days", callback_data=f"remind_3_{idea_id}"),
+            InlineKeyboardButton("Remind in 7 days", callback_data=f"remind_7_{idea_id}"),
         ])
     return InlineKeyboardMarkup(rows)
 
@@ -245,6 +252,7 @@ async def send_idea(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             seen.clear_seen(user_id)
     if idea and user_id is not None:
         seen.add_seen(user_id, idea["id"])
+        activity_module.record_request(user_id)
     if no_ideas_msg:
         if update.callback_query:
             await update.callback_query.answer()
@@ -277,14 +285,17 @@ HELP_TEXT = """Commands:
 /search <keyword> — Search ideas (and tags)
 /saved — Your saved ideas (with Remove buttons)
 /today — Idea of the day
-/mystats — Your seen & saved counts
+/top — Top ideas by helpful votes (👍/👎)
+/mystats — Your seen, saved, done counts and streak
+/privacy — What data we store
+/delete_my_data — Delete all your data (with confirmation)
 /export — Download all ideas; /export saved; add 'json' for JSON
 /suggest — Submit a new idea for review
 /remind on | off | time 10:00 — Daily idea (UTC)
 /browse <category> — List 5 ideas from category (ui, game, dashboard, productivity)
 /help — This message
 /stats — Total ideas and counts
-Admin: /add_idea, /suggestions, /approve <id>, /backup, /broadcast <text>, /delete_idea <id>, /cancel"""
+Admin: /add_idea, /suggestions, /approve <id>, /reject <id> [reason], /backup, /broadcast <text>, /delete_idea <id>, /cancel"""
 
 
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -301,8 +312,10 @@ async def mystats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     seen_count = len(seen.get_seen(user_id))
     saved_count = len(favorites.get_favorites(user_id))
     done_count = len(done_module.get(user_id))
+    streak = activity_module.get_streak(user_id)
+    streak_line = f" You're on a **{streak}** day streak!" if streak else ""
     await update.message.reply_text(
-        f"You've seen **{seen_count}** ideas, saved **{saved_count}**, marked **{done_count}** as done.\n\n"
+        f"You've seen **{seen_count}** ideas, saved **{saved_count}**, marked **{done_count}** as done.{streak_line}\n\n"
         "Use /idea for more, /saved to list saved.",
         parse_mode="Markdown",
     )
@@ -385,6 +398,114 @@ async def broadcast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         except Exception:
             failed += 1
     await update.message.reply_text(f"Broadcast sent to {sent} users. Failed: {failed}.")
+
+
+async def top_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    _record_user(update)
+    top_ids = feedback_module.get_top_idea_ids(limit=5)
+    if not top_ids:
+        await update.message.reply_text("No feedback yet. Use 👍 / 👎 on ideas to see top ideas here.")
+        return
+    lines = ["**Top ideas** (by helpful votes):", ""]
+    for i, idea_id in enumerate(top_ids, 1):
+        idea = get_idea_by_id(idea_id)
+        if idea:
+            up, down = feedback_module.get(idea_id)
+            lines.append(f"{i}. **{idea['title']}** (👍 {up} / 👎 {down})")
+            lines.append((idea.get("description") or "")[:100] + ("..." if len(idea.get("description") or "") > 100 else ""))
+            lines.append("")
+    await update.message.reply_text("\n".join(lines).strip() or "No data.", parse_mode="Markdown")
+
+
+PRIVACY_TEXT = """**Privacy**
+
+This bot stores the following for your account:
+• **Seen** — IDs of ideas you were shown (to reduce repeats)
+• **Saved** — IDs of ideas you saved
+• **Done** — IDs of ideas you marked as "I've done this"
+• **Activity** — Last date you requested an idea and streak count
+• **Reminders** — If you use /remind on: your chat ID and reminder time
+• **Broadcast list** — Your chat ID (so we can send you the daily idea or broadcasts)
+
+We do not sell or share your data. Feedback (👍/👎) is stored per idea, not per user.
+
+To delete all your data: /delete_my_data"""
+
+
+async def privacy_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    _record_user(update)
+    await update.message.reply_text(PRIVACY_TEXT, parse_mode="Markdown")
+
+
+async def delete_my_data_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    _record_user(update)
+    user_id = update.effective_user.id if update.effective_user else None
+    if user_id is None:
+        await update.message.reply_text("Could not identify user.")
+        return
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("Yes, delete my data", callback_data="confirm_delete_my_data"),
+            InlineKeyboardButton("Cancel", callback_data="cancel_delete_my_data"),
+        ],
+    ])
+    await update.message.reply_text(
+        "This will remove your saved ideas, seen list, done list, activity, reminders, and you from the broadcast list. "
+        "You can keep using the bot afterward. Confirm:",
+        reply_markup=keyboard,
+    )
+
+
+async def delete_my_data_confirm_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+    user_id = update.effective_user.id if update.effective_user else None
+    if user_id is None:
+        return
+    if query.data == "confirm_delete_my_data":
+        seen.delete_user(user_id)
+        favorites.delete_user(user_id)
+        done_module.delete_user(user_id)
+        activity_module.delete_user(user_id)
+        reminders.delete_user(user_id)
+        idea_reminders_module.remove_by_user(user_id)
+        users_module.delete_user(user_id)
+        await query.edit_message_text("Your data has been deleted. You can continue using the bot.")
+    else:
+        await query.edit_message_text("Cancelled. Your data was not deleted.")
+
+
+async def reject_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    _record_user(update)
+    if not update.effective_user or not _is_admin(update.effective_user.id):
+        await update.message.reply_text("You are not allowed to use this command.")
+        return
+    if not context.args:
+        await update.message.reply_text("Usage: /reject <id> [reason]")
+        return
+    try:
+        sid = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("Usage: /reject <id> (numeric)")
+        return
+    s = suggestions_module.get_by_id(sid)
+    if not s:
+        await update.message.reply_text(f"No suggestion with id {sid}.")
+        return
+    reason = " ".join(context.args[1:]).strip() if len(context.args) > 1 else None
+    from_user_id = s.get("from_user_id")
+    from_username = s.get("from_username") or "User"
+    suggestions_module.remove(sid)
+    if from_user_id:
+        try:
+            msg = f"Your suggestion \"{s['title']}\" was not added to the bot."
+            if reason:
+                msg += f" Reason: {reason}"
+            msg += " You can submit another with /suggest."
+            await context.bot.send_message(chat_id=from_user_id, text=msg)
+        except Exception:
+            pass
+    await update.message.reply_text(f"Rejected suggestion #{sid}. Submitter notified.")
 
 
 async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -549,23 +670,59 @@ async def remind_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text("Use /remind on, /remind off, or /remind time HH:MM")
 
 
+async def remind_idea_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle 'Remind in 1/3/7 days' button: schedule reminder and confirm."""
+    query = update.callback_query
+    await query.answer()
+    data = query.data or ""
+    if not data.startswith("remind_") or "_" not in data:
+        return
+    parts = data.split("_")
+    if len(parts) != 3 or parts[1] not in ("1", "3", "7"):
+        return
+    try:
+        days = int(parts[1])
+        idea_id = int(parts[2])
+    except ValueError:
+        return
+    user_id = update.effective_user.id if update.effective_user else None
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    if user_id is None or chat_id is None:
+        return
+    idea_reminders_module.add(user_id, chat_id, idea_id, days)
+    await query.edit_message_reply_markup(reply_markup=None)
+    await query.message.reply_text(f"I'll remind you about this idea in {days} day(s).")
+
+
 async def send_daily_ideas_job(context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Job: run every hour; send idea of the day to users whose reminder time matches current UTC hour."""
+    """Job: run every hour; send idea of the day; send due idea reminders."""
     from datetime import datetime, timezone
     try:
         idea = get_idea_of_the_day()
     except ValueError:
-        return
-    text = "Idea of the day:\n\n" + format_idea(idea)
+        idea = None
     now = datetime.now(timezone.utc)
     utc_hour = now.hour
     today_iso = now.strftime("%Y-%m-%d")
-    for user_id, chat_id in reminders.get_chat_ids_for_hour(utc_hour, today_iso):
+    if idea:
+        text = "Idea of the day:\n\n" + format_idea(idea)
+        for user_id, chat_id in reminders.get_chat_ids_for_hour(utc_hour, today_iso):
+            try:
+                await context.bot.send_message(chat_id=chat_id, text=text, parse_mode="Markdown")
+                reminders.mark_sent(user_id, today_iso)
+            except Exception as e:
+                logger.warning("Daily reminder failed for chat %s: %s", chat_id, e)
+    for chat_id, idea_id, _user_id in idea_reminders_module.get_due():
         try:
-            await context.bot.send_message(chat_id=chat_id, text=text, parse_mode="Markdown")
-            reminders.mark_sent(user_id, today_iso)
+            reminder_idea = get_idea_by_id(idea_id)
+            if reminder_idea:
+                await context.bot.send_message(
+                    chat_id=chat_id,
+                    text="Reminder: you asked to be reminded about this idea.\n\n" + format_idea(reminder_idea),
+                    parse_mode="Markdown",
+                )
         except Exception as e:
-            logger.warning("Daily reminder failed for chat %s: %s", chat_id, e)
+            logger.warning("Idea reminder failed for chat %s: %s", chat_id, e)
 
 
 async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -739,6 +896,7 @@ async def today_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id if update.effective_user else None
     if user_id is not None:
         seen.add_seen(user_id, idea["id"])
+        activity_module.record_request(user_id)
     bot_username = context.bot.username if context.bot else None
     await update.message.reply_text(
         "Idea of the day:\n\n" + format_idea(idea),
@@ -912,7 +1070,10 @@ async def _set_bot_commands(application: Application) -> None:
         BotCommand("search", "Search ideas by keyword or tag"),
         BotCommand("saved", "Your saved ideas"),
         BotCommand("today", "Idea of the day"),
+        BotCommand("top", "Top ideas by helpful votes"),
         BotCommand("mystats", "Your seen, saved, done counts"),
+        BotCommand("privacy", "Privacy notice"),
+        BotCommand("delete_my_data", "Delete all your data"),
         BotCommand("export", "Download ideas (export saved, export json)"),
         BotCommand("suggest", "Submit a new idea for review"),
         BotCommand("remind", "Daily idea: on | off | time 10:00"),
@@ -949,6 +1110,10 @@ def main() -> None:
     app.add_handler(CommandHandler("backup", backup_cmd))
     app.add_handler(CommandHandler("broadcast", broadcast_cmd))
     app.add_handler(CommandHandler("delete_idea", delete_idea_cmd))
+    app.add_handler(CommandHandler("top", top_cmd))
+    app.add_handler(CommandHandler("privacy", privacy_cmd))
+    app.add_handler(CommandHandler("delete_my_data", delete_my_data_cmd))
+    app.add_handler(CommandHandler("reject", reject_cmd))
     app.add_handler(InlineQueryHandler(inline_query_handler))
     app.add_handler(CallbackQueryHandler(
         send_idea,
@@ -959,6 +1124,8 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(done_callback, pattern=r"^(done_|undone_)\d+$"))
     app.add_handler(CallbackQueryHandler(share_callback, pattern=r"^share_\d+$"))
     app.add_handler(CallbackQueryHandler(saved_remove_callback, pattern=r"^saved_remove_\d+$"))
+    app.add_handler(CallbackQueryHandler(delete_my_data_confirm_callback, pattern=r"^(confirm_delete_my_data|cancel_delete_my_data)$"))
+    app.add_handler(CallbackQueryHandler(remind_idea_callback, pattern=r"^remind_[137]_\d+$"))
     app.add_handler(CommandHandler("add_idea", add_idea_cmd))
     app.add_handler(CommandHandler("cancel", cancel_add_idea))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, receive_idea_message))

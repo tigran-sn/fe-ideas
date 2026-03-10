@@ -82,6 +82,11 @@ def is_on(user_id: int) -> bool:
     return str(user_id) in _load()
 
 
+def delete_user(user_id: int) -> None:
+    """Remove reminder for this user (for privacy / delete my data)."""
+    remove(user_id)
+
+
 def get_time(user_id: int) -> str:
     data = _load()
     t = data.get(str(user_id), {}).get("time", "09")

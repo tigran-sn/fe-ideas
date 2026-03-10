@@ -27,3 +27,12 @@ def record(user_id: int, chat_id: int) -> None:
 def get_all_chat_ids() -> list[int]:
     data = _load()
     return [int(v["chat_id"]) for v in data.values() if "chat_id" in v]
+
+
+def delete_user(user_id: int) -> None:
+    """Remove user from broadcast list (for privacy / delete my data)."""
+    data = _load()
+    key = str(user_id)
+    if key in data:
+        del data[key]
+        _save(data)

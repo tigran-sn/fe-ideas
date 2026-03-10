@@ -45,3 +45,12 @@ def get_favorites(user_id: int) -> list[int]:
     """Return list of idea IDs saved by the user."""
     data = _load_all()
     return list(data.get(str(user_id), []))
+
+
+def delete_user(user_id: int) -> None:
+    """Remove all favorites for this user (for privacy / delete my data)."""
+    data = _load_all()
+    key = str(user_id)
+    if key in data:
+        del data[key]
+        _save(data)

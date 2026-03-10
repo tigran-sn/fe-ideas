@@ -35,3 +35,22 @@ def get(idea_id: int) -> tuple[int, int]:
     if key not in data:
         return 0, 0
     return data[key].get("up", 0), data[key].get("down", 0)
+
+
+def get_top_idea_ids(limit: int = 5) -> list[int]:
+    """Return idea_ids sorted by helpful ratio (up / (up+down+1)), then by up count. At least one vote."""
+    data = _load()
+    scored = []
+    for idea_id_str, v in data.items():
+        up = v.get("up", 0)
+        down = v.get("down", 0)
+        if up + down == 0:
+            continue
+        try:
+            idea_id = int(idea_id_str)
+        except ValueError:
+            continue
+        ratio = up / (up + down + 1)
+        scored.append((idea_id, ratio, up))
+    scored.sort(key=lambda x: (x[1], x[2]), reverse=True)
+    return [x[0] for x in scored[:limit]]
