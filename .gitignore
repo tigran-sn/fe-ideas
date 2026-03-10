@@ -1,0 +1,12 @@
+.env
+__pycache__/
+venv/
+*.pyc
+.venv/
+favorites.json
+seen.json
+suggestions.json
+reminders.json
+feedback.json
+done.json
+users.json

@@ -1,0 +1,254 @@
+[
+  {
+    "title": "Pomodoro Timer",
+    "description": "Build a focus timer that uses the Pomodoro technique: 25 min work, 5 min break. Add sound notifications and optional task list.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Weather Dashboard",
+    "description": "Fetch weather from a free API and show current conditions plus 5-day forecast. Add search by city and toggle between metric/imperial.",
+    "difficulty": "beginner",
+    "category": "dashboard"
+  },
+  {
+    "title": "Markdown Preview",
+    "description": "A split-pane editor: type Markdown on the left and see live-rendered HTML on the right. Support headings, lists, code blocks, and links.",
+    "difficulty": "beginner",
+    "category": "UI"
+  },
+  {
+    "title": "Quiz App",
+    "description": "Multiple-choice quiz with a set of questions, score tracking, and a results screen. Load questions from JSON or a simple API.",
+    "difficulty": "beginner",
+    "category": "game"
+  },
+  {
+    "title": "Expense Tracker",
+    "description": "Add income and expenses with categories and dates. Show a summary and a simple chart (e.g. by category or over time). Persist in localStorage.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Todo List with Filters",
+    "description": "Full CRUD todos with filters: All, Active, Completed. Optional: due dates, priorities, and drag-and-drop reorder.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Recipe Finder",
+    "description": "Search recipes by ingredient or name using a free API (e.g. TheMealDB). Display results with image, ingredients, and instructions.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Memory Card Game",
+    "description": "Flip cards to find matching pairs. Add difficulty levels (grid size), move counter, and a timer.",
+    "difficulty": "beginner",
+    "category": "game"
+  },
+  {
+    "title": "Color Palette Generator",
+    "description": "Generate random or rule-based color palettes. Allow copying hex codes and optionally export as CSS variables or JSON.",
+    "difficulty": "beginner",
+    "category": "UI"
+  },
+  {
+    "title": "GitHub Repo Explorer",
+    "description": "Search GitHub repos by keyword, show list with stars, language, and description. Link to repo and optionally show recent commits.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Typing Speed Test",
+    "description": "Display a short paragraph; user types it. Measure WPM and accuracy, show results and optional history.",
+    "difficulty": "beginner",
+    "category": "game"
+  },
+  {
+    "title": "Dark/Light Theme Toggle",
+    "description": "A small app (e.g. a landing page or settings screen) with a theme switcher. Persist preference and respect system preference.",
+    "difficulty": "beginner",
+    "category": "UI"
+  },
+  {
+    "title": "Countdown Timer",
+    "description": "Set a date or duration and show a live countdown. Optional: multiple events and notifications (e.g. browser Notification API).",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Random Quote Machine",
+    "description": "Show a random quote (from a local list or API). Add a button to get another and optional 'Tweet' share link.",
+    "difficulty": "beginner",
+    "category": "UI"
+  },
+  {
+    "title": "Drawing / Sketch Pad",
+    "description": "Canvas-based drawing with brush size and color picker. Optional: undo, clear, and save as image.",
+    "difficulty": "intermediate",
+    "category": "UI"
+  },
+  {
+    "title": "REST Countries Explorer",
+    "description": "Use the REST Countries API to list countries with search and filter by region. Detail view with borders, languages, and currency.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Tic-Tac-Toe with AI",
+    "description": "Classic tic-tac-toe with an unbeatable minimax opponent. Add board size 3x3 and optional 5x5.",
+    "difficulty": "intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Animated Landing Page",
+    "description": "A single-page landing for a product or event with scroll-triggered animations, smooth sections, and a clear CTA.",
+    "difficulty": "intermediate",
+    "category": "UI"
+  },
+  {
+    "title": "Password Generator",
+    "description": "Generate secure passwords with options for length, uppercase, numbers, symbols. Copy to clipboard and show strength meter.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Movie Search App",
+    "description": "Search movies via OMDB or TMDb API. Show poster, rating, year, and plot. Optional: favorites list in localStorage.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Real-time Collaborative Whiteboard",
+    "description": "Multi-user canvas with WebSockets: draw shapes, sticky notes, and cursors. Sync state across clients and support rooms.",
+    "difficulty": "advanced",
+    "category": "UI"
+  },
+  {
+    "title": "Unit Converter",
+    "description": "Convert between units: length, weight, temperature, time. Clean form with instant results and optional history.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Snake Game",
+    "description": "Classic Snake: move with arrow keys, eat food to grow, avoid walls and yourself. Add score and difficulty speed levels.",
+    "difficulty": "beginner",
+    "category": "game"
+  },
+  {
+    "title": "Bookmark Manager",
+    "description": "Save, tag, and search bookmarks. Folders or tags, export/import, and optional simple search with filters.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "BMI Calculator",
+    "description": "Input height and weight, show BMI and a simple healthy-range indicator. Optional: metric/imperial and basic advice.",
+    "difficulty": "beginner",
+    "category": "dashboard"
+  },
+  {
+    "title": "Image Gallery with Lightbox",
+    "description": "Grid of images (local or from API) with click-to-expand lightbox, prev/next, and optional lazy loading.",
+    "difficulty": "beginner",
+    "category": "UI"
+  },
+  {
+    "title": "Stopwatch & Lap Timer",
+    "description": "Start, pause, reset stopwatch with lap times. Display list of laps and optionally save best lap.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Hangman Game",
+    "description": "Guess the word letter by letter with a limited number of wrong guesses. Use a word list and optional difficulty (word length).",
+    "difficulty": "beginner",
+    "category": "game"
+  },
+  {
+    "title": "News Reader",
+    "description": "Fetch top headlines from a news API. List with image, title, source, and link. Optional: filter by category or search.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Kanban Board",
+    "description": "Drag-and-drop columns (e.g. To Do, In Progress, Done) with cards. Persist in localStorage and optional add/edit/delete.",
+    "difficulty": "intermediate",
+    "category": "productivity"
+  },
+  {
+    "title": "Currency Converter",
+    "description": "Convert between currencies using a free exchange-rate API. Input amount and two currencies, show result and optional date picker.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Music Player UI",
+    "description": "Fake or real audio: play/pause, progress bar, volume, playlist. Focus on UI and optional keyboard shortcuts.",
+    "difficulty": "intermediate",
+    "category": "UI"
+  },
+  {
+    "title": "Breakout / Arkanoid",
+    "description": "Paddle, ball, and bricks. Bounce physics, levels, lives, and score. Use canvas or DOM with requestAnimationFrame.",
+    "difficulty": "intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Chart Dashboard",
+    "description": "Display data with line, bar, or pie charts (e.g. Chart.js). Load from JSON or API, add filters and tooltips.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  },
+  {
+    "title": "Infinite Scroll Gallery",
+    "description": "Load images from an API (e.g. Unsplash) and append more on scroll. Optional: search and lightbox.",
+    "difficulty": "intermediate",
+    "category": "UI"
+  },
+  {
+    "title": "Flashcard App",
+    "description": "Create decks and cards, flip to reveal answer, mark known/unknown. Shuffle and optional spaced-repetition hint.",
+    "difficulty": "intermediate",
+    "category": "productivity"
+  },
+  {
+    "title": "Tetris",
+    "description": "Classic falling blocks: rotate, move, clear lines, level up speed. Use canvas or grid-based DOM.",
+    "difficulty": "intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Form Builder Preview",
+    "description": "Drag form fields (text, select, checkbox) into a canvas and live-preview the resulting form. Export as JSON or HTML.",
+    "difficulty": "advanced",
+    "category": "UI"
+  },
+  {
+    "title": "Virtual Drum Kit",
+    "description": "Click or use keyboard to play drum sounds. Visual feedback and optional record/playback of a short sequence.",
+    "difficulty": "beginner",
+    "category": "game"
+  },
+  {
+    "title": "CSS Gradient Generator",
+    "description": "Pick colors and stops to build a gradient. Live preview, copy CSS, and optional presets (linear/radial).",
+    "difficulty": "beginner",
+    "category": "UI"
+  },
+  {
+    "title": "Word Counter",
+    "description": "Paste or type text and see word count, character count, and optional reading-time estimate. Simple and fast.",
+    "difficulty": "beginner",
+    "category": "productivity"
+  },
+  {
+    "title": "Pagination & Table",
+    "description": "Display tabular data (from JSON or API) with sortable columns, search, and client-side or server-side pagination.",
+    "difficulty": "intermediate",
+    "category": "dashboard"
+  }
+]
